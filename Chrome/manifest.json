@@ -15,10 +15,6 @@
     "storage"
   ],
 
-  "host_permissions": [
-    "*://*.youtube.com/*"
-  ],
-
   "action": {
     "default_icon": {
       "16": "icons/icon-16.png",
