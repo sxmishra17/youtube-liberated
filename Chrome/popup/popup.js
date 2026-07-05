@@ -1,6 +1,7 @@
 /**
  * ============================================================================
  * YouTube Liberated — Popup Logic (Chrome MV3)
+ * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *
  * This file handles reading/writing settings from Chrome storage and updating

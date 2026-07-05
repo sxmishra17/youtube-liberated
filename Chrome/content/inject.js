@@ -1,6 +1,7 @@
 /**
  * ============================================================================
  * YouTube Liberated — Inject Script (MAIN world execution)
+ * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *
  * This script is injected directly into YouTube's page context (MAIN world).

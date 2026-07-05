@@ -1,6 +1,7 @@
 /**
  * ============================================================================
  * YouTube Liberated — Content Script Logic
+ * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *
  * This content script is injected directly into YouTube pages.
