@@ -1,0 +1,47 @@
+{
+  "manifest_version": 2,
+  "name": "YouTube Liberated",
+  "version": "1.1.0",
+  "description": "Lightweight extension to block ads, Shorts, Community Posts, and play audio in the background on YouTube.",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "youtube-liberated@satishmishra.dev",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+
+  "permissions": [
+    "storage",
+    "*://*.youtube.com/*"
+  ],
+
+  "browser_action": {
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    },
+    "default_title": "YouTube Liberated",
+    "default_popup": "popup/popup.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "css": ["content/content.css"],
+      "js": ["content/content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

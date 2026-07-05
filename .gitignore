@@ -1,0 +1,16 @@
+# Ignore packages
+*.zip
+
+# Ignore IDE/editor configuration files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore system temporary files
+Thumbs.db
+ehthumbs.db
+Desktop.ini

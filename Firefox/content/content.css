@@ -1,0 +1,144 @@
+/*
+============================================================================
+YouTube Liberated — Content Scripts Stylesheet
+============================================================================
+
+This stylesheet defines CSS rules to hide ad components, Shorts sections,
+and Community Posts. To support independent toggling without page reloads,
+these selectors are scoped under three root classes on the <html> tag:
+
+1. `.yt-block-ads`    - Applied when Ad blocker is ON
+2. `.yt-block-shorts` - Applied when Shorts blocker is ON
+3. `.yt-block-posts`  - Applied when Posts blocker is ON
+
+Applying or removing these classes on the <html> tag instantly toggles
+blocking without layout flicker or performance cost.
+============================================================================
+*/
+
+/* ── 1. ADS BLOCKING RULES ──────────────────────────────────────────────── */
+/* Scoped to html.yt-block-ads. Any matching elements will be hidden.     */
+
+/* Homepage Masthead Ad */
+html.yt-block-ads #masthead-ad,
+html.yt-block-ads ytd-banner-promo-renderer,
+html.yt-block-ads ytm-ad-slot,
+html.yt-block-ads ad-slot-renderer {
+  display: none !important;
+}
+
+/* Feed & General Ads Slots */
+html.yt-block-ads ytd-ad-slot-renderer,
+html.yt-block-ads ytd-in-feed-ad-layout-renderer,
+html.yt-block-ads ytd-promoted-sparkles-web-renderer,
+html.yt-block-ads ytd-statement-banner-renderer,
+html.yt-block-ads ytd-brand-video-singleton-renderer,
+html.yt-block-ads ytm-promoted-sparkles-web-renderer,
+html.yt-block-ads ytm-display-ad-renderer,
+html.yt-block-ads ytm-inline-ad-renderer {
+  display: none !important;
+}
+
+/* Sidebar Display Ads */
+html.yt-block-ads ytd-display-ad-renderer,
+html.yt-block-ads ytd-compact-promoted-item-renderer,
+html.yt-block-ads #player-ads,
+html.yt-block-ads ytm-companion-ad-renderer {
+  display: none !important;
+}
+
+/* Video Player Ad Overlays (Banners during video playback) */
+html.yt-block-ads .ytp-ad-overlay-container,
+html.yt-block-ads .ytp-ad-text-overlay,
+html.yt-block-ads .ytp-ad-message-container {
+  display: none !important;
+}
+
+/* Search Promoted Ads */
+html.yt-block-ads ytd-promoted-video-renderer {
+  display: none !important;
+}
+
+/* YouTube Premium Promos (Mealbars/Popups) */
+html.yt-block-ads ytd-mealbar-promo-renderer,
+html.yt-block-ads yt-mealbar-promo-renderer {
+  display: none !important;
+}
+
+/* Merch Shelves & Sponsored Banners */
+html.yt-block-ads ytd-merch-shelf-renderer,
+html.yt-block-ads ytd-companion-slot-renderer {
+  display: none !important;
+}
+
+
+/* ── 2. SHORTS BLOCKING RULES ───────────────────────────────────────────── */
+/* Scoped to html.yt-block-shorts. Hides navigation items & content shelves. */
+
+/* Homepage Shorts Grid/Shelf */
+html.yt-block-shorts ytd-rich-shelf-renderer[is-shorts],
+html.yt-block-shorts ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.yt-block-shorts ytm-reel-shelf-renderer,
+html.yt-block-shorts ytm-rich-section-renderer:has(ytm-reel-shelf-renderer),
+html.yt-block-shorts ytm-rich-section-renderer:has-text("Shorts") {
+  display: none !important;
+}
+
+/* Search results Shorts Shelf & Subscription grid Shorts Shelves */
+html.yt-block-shorts ytd-reel-shelf-renderer,
+html.yt-block-shorts ytd-item-section-renderer:has(ytd-reel-shelf-renderer),
+html.yt-block-shorts .reel-shelf-items {
+  display: none !important;
+}
+
+/* Full sidebar Navigation link ("Shorts") */
+html.yt-block-shorts ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+html.yt-block-shorts ytd-guide-entry-renderer[entry-id="FEshorts"],
+html.yt-block-shorts a[path="shorts"],
+html.yt-block-shorts ytm-pivot-bar-item-renderer[aria-label="Shorts"],
+html.yt-block-shorts ytm-pivot-bar-item-renderer[entry-id="FEshorts"],
+html.yt-block-shorts ytm-pivot-bar-item-renderer:has(a[href^="/shorts"]) {
+  display: none !important;
+}
+
+/* Mini sidebar (collapsed sidebar) Navigation link ("Shorts") */
+html.yt-block-shorts ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+html.yt-block-shorts ytd-mini-guide-entry-renderer[entry-id="FEshorts"] {
+  display: none !important;
+}
+
+/* Hide Shorts tab on channel pages */
+html.yt-block-shorts yt-tab-descriptor-wrapper[key="SHORTS"],
+html.yt-block-shorts tp-yt-paper-tab:has(div[title="Shorts"]),
+html.yt-block-shorts ytm-tab-descriptor-wrapper[key="SHORTS"],
+html.yt-block-shorts ytm-tab-renderer[tab-id="SHORTS"] {
+  display: none !important;
+}
+
+
+/* ── 3. POSTS BLOCKING RULES ────────────────────────────────────────────── */
+/* Scoped to html.yt-block-posts. Hides Community / Backstage posts.          */
+
+/* Standard Community Post thread item on home page and subscription feeds */
+html.yt-block-posts ytd-backstage-post-thread-renderer,
+html.yt-block-posts ytd-backstage-post-renderer,
+html.yt-block-posts ytd-post-renderer,
+html.yt-block-posts ytd-shared-post-renderer,
+html.yt-block-posts ytm-backstage-post-thread-renderer,
+html.yt-block-posts ytm-post-renderer {
+  display: none !important;
+}
+
+/* Hide the grid layout container card so it doesn't leave an empty space */
+html.yt-block-posts ytd-rich-item-renderer:has(ytd-backstage-post-thread-renderer),
+html.yt-block-posts ytd-rich-item-renderer:has(ytd-backstage-post-renderer),
+html.yt-block-posts ytd-rich-item-renderer:has(ytd-post-renderer),
+html.yt-block-posts ytd-rich-item-renderer:has(ytd-shared-post-renderer) {
+  display: none !important;
+}
+
+/* Hide entire section if the row/shelf only contains posts */
+html.yt-block-posts ytd-rich-section-renderer:has(ytd-backstage-post-thread-renderer) {
+  display: none !important;
+}
+

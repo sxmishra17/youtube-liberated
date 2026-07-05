@@ -1,0 +1,143 @@
+<!--
+  ============================================================================
+  YouTube Liberated — Popup UI
+  ============================================================================
+
+  This is the popup that appears when you click the extension icon in the
+  Firefox toolbar. It provides three toggle switches:
+
+    1. Ads Blocker    — hides/skips all YouTube ads
+    2. Shorts Blocker — hides YouTube Shorts sections and redirects /shorts/ URLs
+    3. Posts Blocker  — hides YouTube Community posts from feeds
+
+  HOW IT WORKS:
+  - On popup open: reads current toggle states from browser.storage.local
+  - On toggle change: writes new state to browser.storage.local
+  - The content script (content.js) listens for storage changes and
+    applies/removes blocking rules in real-time (no page reload needed)
+
+  DESIGN NOTES:
+  - Dark theme inspired by YouTube's dark mode
+  - Compact size (~280px wide) to stay out of the way
+  - Pure CSS toggle switches (no libraries or frameworks)
+  - Accessible: uses proper labels, ARIA attributes, and keyboard support
+  ============================================================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=280">
+  <title>YouTube Liberated</title>
+  <!-- Popup stylesheet — dark theme with YouTube-inspired colors -->
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────── -->
+  <!-- Shows the extension name and a small shield icon (emoji-based,   -->
+  <!-- no external assets needed)                                        -->
+  <div class="header">
+    <img src="../icons/icon-48.png" class="header-icon" alt="YouTube Liberated Icon">
+    <h1>YouTube Liberated</h1>
+  </div>
+
+  <!-- ── TOGGLE: ADS BLOCKER ─────────────────────────────────────────── -->
+  <!-- Controls whether YouTube ads are hidden/skipped.                  -->
+  <!-- The "data-setting" attribute tells popup.js which storage key     -->
+  <!-- to read/write for this toggle.                                    -->
+  <div class="toggle-row" id="ads-toggle-row">
+    <div class="toggle-info">
+      <span class="toggle-label">Block Ads</span>
+      <span class="toggle-status" id="ads-status">ON</span>
+    </div>
+    <label class="toggle-switch" for="ads-toggle" aria-label="Toggle ad blocking">
+      <input
+        type="checkbox"
+        id="ads-toggle"
+        data-setting="blockAds"
+        checked
+      >
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- ── TOGGLE: SHORTS BLOCKER ──────────────────────────────────────── -->
+  <!-- Controls whether YouTube Shorts sections are hidden and           -->
+  <!-- /shorts/ URLs are redirected to /watch/ (normal player).          -->
+  <div class="toggle-row" id="shorts-toggle-row">
+    <div class="toggle-info">
+      <span class="toggle-label">Block Shorts</span>
+      <span class="toggle-status" id="shorts-status">ON</span>
+    </div>
+    <label class="toggle-switch" for="shorts-toggle" aria-label="Toggle shorts blocking">
+      <input
+        type="checkbox"
+        id="shorts-toggle"
+        data-setting="blockShorts"
+        checked
+      >
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- ── TOGGLE: POSTS BLOCKER ───────────────────────────────────────── -->
+  <!-- Controls whether YouTube Community Posts are hidden.              -->
+  <div class="toggle-row" id="posts-toggle-row">
+    <div class="toggle-info">
+      <span class="toggle-label">Block Posts</span>
+      <span class="toggle-status" id="posts-status">ON</span>
+    </div>
+    <label class="toggle-switch" for="posts-toggle" aria-label="Toggle posts blocking">
+      <input
+        type="checkbox"
+        id="posts-toggle"
+        data-setting="blockPosts"
+        checked
+      >
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+  <!-- Separates blocking features from playback features                  -->
+  <div class="toggle-divider"></div>
+
+  <!-- ── TOGGLE: BACKGROUND PLAY ──────────────────────────────────────── -->
+  <!-- Controls whether YouTube audio continues playing when Firefox       -->
+  <!-- is minimized or the screen is locked. Overrides the Page Visibility -->
+  <!-- API so YouTube never detects the page is hidden.                    -->
+  <div class="toggle-row" id="bg-toggle-row">
+    <div class="toggle-info">
+      <span class="toggle-label">Background Play</span>
+      <span class="toggle-description">Keep audio when minimized</span>
+      <span class="toggle-status" id="bg-status">ON</span>
+    </div>
+    <label class="toggle-switch" for="bg-toggle" aria-label="Toggle background playback">
+      <input
+        type="checkbox"
+        id="bg-toggle"
+        data-setting="bgPlayback"
+        checked
+      >
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- ── FOOTER ──────────────────────────────────────────────────────── -->
+  <!-- Minimal footer with version info and company promotion            -->
+  <div class="footer">
+    <span>v1.1.0 • YouTube only</span>
+    <div class="company-promo">
+      <span class="promo-label">Developed by</span>
+      <div class="company-brand">
+        <img src="../icons/yuvatech_logo.png" class="company-logo" alt="YuvaTech Logo">
+        <span class="company-name">Yuvatech Solutions USA LLC</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup logic — reads/writes toggle states to browser.storage.local -->
+  <script src="popup.js"></script>
+</body>
+</html>

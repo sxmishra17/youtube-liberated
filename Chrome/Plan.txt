@@ -1,0 +1,11 @@
+Here is a plan:
+1. I need to make a Chrome extension for blocking the ads, posts and shorts both in the youtube
+2. It should have 3 toggle buttons to turn on and off the shorts, ads and posts.
+3. It should be lightweight, easy to use, minimal gui and should not interfere with other tabs or applications
+4. Write an very thorough implementation of the code with proper comments and explanations, I will use gemini flash to code it.
+5. Also add a short note in the code about how to use it
+6. Add Yuvasoft logo at the bottom
+7. It should be compatible with the android as well and should be suitable for background play, means if the browser is minimized or screen is locked, the youtube should keep on playing the media as audio
+8. Similar extension for the firefox is written in \Firefox folder. Read it thoroughly and create an implementation plan to make an extension for the Chrome. Exactly same features. Copy files if you need to for icon etc
+9. The addon should not interfere with any of the tabs or data and browser should run smoothly. No bugs or memory leaks. 
+

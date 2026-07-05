@@ -1,0 +1,228 @@
+/*
+============================================================================
+YouTube Liberated — Popup Styles
+============================================================================
+
+This file styles the browser action popup. It uses a clean, dark-themed
+design inspired by YouTube's dark mode.
+
+Key design elements:
+- Flexbox layouts for alignments
+- Premium typography & colors
+- Pure CSS toggle switches with smooth animations
+============================================================================
+*/
+
+:root {
+  --bg-color: #0f0f0f;         /* YouTube dark mode background */
+  --card-bg: #1f1f1f;          /* Slightly lighter dark for rows */
+  --text-primary: #f1f1f1;     /* Primary text color */
+  --text-secondary: #aaaaaa;   /* Secondary text color */
+  --accent-color: #ff0000;     /* YouTube brand red */
+  --switch-on-bg: #2ba640;     /* Green toggle for ON state */
+  --switch-off-bg: #3f3f3f;    /* Dark gray toggle for OFF state */
+  --border-color: #3f3f3f;     /* Subtle divider lines */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  width: 250px;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* Header Container */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Individual Toggle Rows */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--card-bg);
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.toggle-row:hover {
+  background-color: #2a2a2a;
+}
+
+.toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toggle-status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+/* Class applied dynamically when a switch is checked */
+.toggle-row.active .toggle-status {
+  color: #2ba640;
+}
+
+.toggle-row:not(.active) .toggle-status {
+  color: var(--text-secondary);
+}
+
+/* ── TOGGLE SWITCH (PURE CSS) ── */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+/* Hide default HTML checkbox */
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The Slider background */
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--switch-off-bg);
+  border-radius: 24px;
+  transition: background-color 0.2s ease;
+}
+
+/* The round knob inside the slider */
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Change slider color when checked */
+input:checked + .toggle-slider {
+  background-color: var(--switch-on-bg);
+}
+
+/* Move knob when checked */
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Focus styling for keyboard accessibility */
+input:focus + .toggle-slider {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Footer Section */
+.footer {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ── DIVIDER (separates blocking toggles from playback toggle) ── */
+.toggle-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-color),
+    transparent
+  );
+  margin: 6px 0;
+}
+
+/* ── TOGGLE DESCRIPTION (subtitle under label) ── */
+.toggle-description {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* ── COMPANY PROMOTION ── */
+.company-promo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  opacity: 0.85;
+}
+
+.promo-label {
+  font-size: 8px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.company-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.company-logo {
+  height: 22px; /* Made icon bigger for visibility */
+  width: auto;
+  object-fit: contain;
+}
+
+.company-name {
+  font-size: 10px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
