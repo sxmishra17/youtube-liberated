@@ -1,8 +1,0 @@
-Here is a plan:
-1. I need to make a Firefox extension for blocking the ads, posts and shorts both in the youtube
-2. It should have 3 toggle buttons to turn on and off the shorts, ads and posts.
-3. It should be lightweight, easy to use, minimal gui and should not interfere with other tabs or applications
-4. Write an very thorough implementation of the code with proper comments and explanations, I will use gemini flash to code it.
-5. Also add a short note in the code about how to use it
-6. Add Yuvasoft logo at the bottom
-7. It should be compatible with the android as well and should be suitable for background play, means if the browser is minimized or screen is locked, the youtube should keep on playing the media as audio
