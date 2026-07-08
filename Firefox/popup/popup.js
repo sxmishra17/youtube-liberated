@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * YouTube Liberated — Popup Logic
+ * Youtube Smooth — Popup Logic
  * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *

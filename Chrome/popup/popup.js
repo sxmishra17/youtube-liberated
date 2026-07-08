@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * YouTube Liberated — Popup Logic (Chrome MV3)
+ * Youtube Smooth — Popup Logic (Chrome MV3)
  * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *
@@ -12,7 +12,7 @@
  * ── HOW TO USE ──────────────────────────────────────────────────────────────
  * 1. Load the extension in Chrome via chrome://extensions/ -> Enable Developer
  *    Mode -> Load unpacked -> select the extension directory
- * 2. Click the YouTube Liberated icon in the toolbar to open this popup
+ * 2. Click the Youtube Smooth icon in the toolbar to open this popup
  * 3. Toggle settings ON/OFF to control YouTube features:
  *    - Block Ads (toggles ad block CSS & JS)
  *    - Block Shorts (toggles Shorts CSS & redirects /shorts/ URLs)

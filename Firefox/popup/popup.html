@@ -1,6 +1,6 @@
 <!--
   ============================================================================
-  YouTube Liberated — Popup UI
+  Youtube Smooth — Popup UI
   ============================================================================
 
   This is the popup that appears when you click the extension icon in the
@@ -25,21 +25,23 @@
 -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=280">
-  <title>YouTube Liberated</title>
+  <title>Youtube Smooth</title>
   <!-- Popup stylesheet — dark theme with YouTube-inspired colors -->
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
 
   <!-- ── HEADER ──────────────────────────────────────────────────────── -->
   <!-- Shows the extension name and a small shield icon (emoji-based,   -->
   <!-- no external assets needed)                                        -->
   <div class="header">
-    <img src="../icons/icon-48.png" class="header-icon" alt="YouTube Liberated Icon">
-    <h1>YouTube Liberated</h1>
+    <img src="../icons/icon-48.png" class="header-icon" alt="Youtube Smooth Icon">
+    <h1>Youtube Smooth</h1>
   </div>
 
   <!-- ── TOGGLE: ADS BLOCKER ─────────────────────────────────────────── -->
@@ -52,12 +54,7 @@
       <span class="toggle-status" id="ads-status">ON</span>
     </div>
     <label class="toggle-switch" for="ads-toggle" aria-label="Toggle ad blocking">
-      <input
-        type="checkbox"
-        id="ads-toggle"
-        data-setting="blockAds"
-        checked
-      >
+      <input type="checkbox" id="ads-toggle" data-setting="blockAds" checked>
       <span class="toggle-slider"></span>
     </label>
   </div>
@@ -71,12 +68,7 @@
       <span class="toggle-status" id="shorts-status">ON</span>
     </div>
     <label class="toggle-switch" for="shorts-toggle" aria-label="Toggle shorts blocking">
-      <input
-        type="checkbox"
-        id="shorts-toggle"
-        data-setting="blockShorts"
-        checked
-      >
+      <input type="checkbox" id="shorts-toggle" data-setting="blockShorts" checked>
       <span class="toggle-slider"></span>
     </label>
   </div>
@@ -89,12 +81,7 @@
       <span class="toggle-status" id="posts-status">ON</span>
     </div>
     <label class="toggle-switch" for="posts-toggle" aria-label="Toggle posts blocking">
-      <input
-        type="checkbox"
-        id="posts-toggle"
-        data-setting="blockPosts"
-        checked
-      >
+      <input type="checkbox" id="posts-toggle" data-setting="blockPosts" checked>
       <span class="toggle-slider"></span>
     </label>
   </div>
@@ -114,12 +101,7 @@
       <span class="toggle-status" id="bg-status">ON</span>
     </div>
     <label class="toggle-switch" for="bg-toggle" aria-label="Toggle background playback">
-      <input
-        type="checkbox"
-        id="bg-toggle"
-        data-setting="bgPlayback"
-        checked
-      >
+      <input type="checkbox" id="bg-toggle" data-setting="bgPlayback" checked>
       <span class="toggle-slider"></span>
     </label>
   </div>
@@ -140,4 +122,5 @@
   <!-- Popup logic — reads/writes toggle states to browser.storage.local -->
   <script src="popup.js"></script>
 </body>
+
 </html>

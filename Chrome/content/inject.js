@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * YouTube Liberated — Inject Script (MAIN world execution)
+ * Youtube Smooth — Inject Script (MAIN world execution)
  * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *

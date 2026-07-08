@@ -1,6 +1,6 @@
 # Chrome Web Store Publication Metadata
 
-Below is the structured metadata, optimized descriptions, and asset list required to publish **YouTube Liberated** to the Chrome Web Store.
+Below is the structured metadata, optimized descriptions, and asset list required to publish **Youtube Smooth** to the Chrome Web Store.
 
 ---
 
@@ -8,7 +8,7 @@ Below is the structured metadata, optimized descriptions, and asset list require
 
 ### 🏷️ Extension Name
 ```text
-YouTube Liberated
+Youtube Smooth
 ```
 
 ### ✍️ Short Description (Max 150 characters)
@@ -23,9 +23,9 @@ Declutter the YouTube interface for a distraction-free viewing experience by tog
 *Aligned with Chrome Web Store's Single Purpose Policy. It describes all features as parts of a single, unified utility: interface decluttering.*
 
 ```text
-YouTube Liberated is a single-purpose utility designed to declutter the YouTube viewing interface, allowing you to create a clean, distraction-free layout tailored to your needs. 
+Youtube Smooth is a single-purpose utility designed to declutter the YouTube viewing interface, allowing you to create a clean, distraction-free layout tailored to your needs. 
 
-By running ultra-lightweight CSS layout adjustments, YouTube Liberated removes modern interface clutter and non-video feed distractions. Users can modularly toggle which interface elements to hide directly from the extension's popup panel:
+By running ultra-lightweight CSS layout adjustments, Youtube Smooth removes modern interface clutter and non-video feed distractions. Users can modularly toggle which interface elements to hide directly from the extension's popup panel:
 
 🧹 UNIFIED DECLUTTERING FEATURES:
 
@@ -51,7 +51,7 @@ By running ultra-lightweight CSS layout adjustments, YouTube Liberated removes m
 Click the toolbar icon to access a minimal customization panel. Toggle any layout element ON or OFF in real-time. Changes are stored locally, persist across browser restarts, and take effect instantly without reloading the page.
 
 🔒 PRIVACY & LIGHTWEIGHT DESIGN:
-YouTube Liberated requires only "storage" permissions to save your custom layout preferences, and host permissions for youtube.com. It features no tracking, collects no user metrics, and uses pure CSS injection for maximum performance and a zero-latency browsing experience.
+Youtube Smooth requires only "storage" permissions to save your custom layout preferences, and host permissions for youtube.com. It features no tracking, collects no user metrics, and uses pure CSS injection for maximum performance and a zero-latency browsing experience.
 ```
 
 ---
@@ -105,7 +105,7 @@ Select: "No, I am not collecting or using user data."
 ### 2. Public Data Usage Justification / Disclosure
 *This copy is displayed publicly on your item's Chrome Web Store details page under the Privacy tab:*
 ```text
-YouTube Liberated is committed to absolute user privacy. The extension operates entirely client-side and does not collect, record, process, store, or transmit any user data, personally identifiable information (PII), browsing history, or analytics.
+Youtube Smooth is committed to absolute user privacy. The extension operates entirely client-side and does not collect, record, process, store, or transmit any user data, personally identifiable information (PII), browsing history, or analytics.
 
 All user preferences (such as feature toggle selections) are stored locally on the user's own device using the standard chrome.storage.local API. No data is sent over the network to external servers or third-party entities. The extension uses host permissions exclusively to apply CSS styling rules and perform local DOM modifications on YouTube pages to deliver a distraction-free viewing layout.
 ```

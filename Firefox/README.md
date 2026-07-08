@@ -1,4 +1,4 @@
-# YouTube Liberated (Firefox Extension)
+# Youtube Smooth (Firefox Extension)
 
 A lightweight, single-purpose Firefox extension built on **Manifest V2** to declutter the YouTube viewing interface and provide a clean, distraction-free environment. 
 
@@ -48,7 +48,7 @@ The Firefox extension uses the following architecture:
 4.  Click **This Firefox** in the left sidebar menu.
 5.  Click the **Load Temporary Add-on...** button in the top-right.
 6.  Navigate to your local repository directory, open the **`Firefox/`** folder, and select the **`manifest.json`** file.
-7.  The **YouTube Liberated** icon will appear in your extensions list. Pin it to your toolbar for easy access.
+7.  The **Youtube Smooth** icon will appear in your extensions list. Pin it to your toolbar for easy access.
 
 ---
 

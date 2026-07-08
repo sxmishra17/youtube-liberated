@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * YouTube Liberated — Content Script Logic
+ * Youtube Smooth — Content Script Logic
  * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *
@@ -170,19 +170,29 @@
   /**
    * ── 2b. BACKGROUND AUDIO PLAYBACK ──────────────────────────────────────────
    * Overrides the Page Visibility API so YouTube never detects that the browser
-   * has been minimized. Without this, YouTube pauses the video when the page
-   * becomes hidden (its way of enforcing YouTube Premium for background play).
+   * has been minimized or the screen has been locked. Without this, YouTube
+   * pauses the video when the page becomes hidden (enforcing YouTube Premium).
+   *
+   * IMPORTANT — MAIN WORLD INJECTION:
+   * Content scripts run in an isolated world. YouTube's JS runs in the page
+   * world. Overriding document.hidden in the content script does NOT affect
+   * what YouTube sees. We must inject a <script> tag into the DOM so the
+   * override code executes in the same JS context as YouTube's player code.
    *
    * When enabled, this:
-   * 1. Overrides document.hidden → always returns false
-   * 2. Overrides document.visibilityState → always returns "visible"
-   * 3. Blocks visibilitychange events from reaching YouTube's listeners
+   * 1. Injects page-world script to override document.hidden → false
+   * 2. Injects page-world script to override document.visibilityState → "visible"
+   * 3. Blocks visibilitychange/pagehide events at the capture phase via
+   *    stopImmediatePropagation so already-registered listeners never fire
+   * 4. Runs a keepalive interval that detects and resumes paused video elements
+   *    (safety net for Android screen-lock scenarios)
    *
-   * This is the same technique used by "Video Background Play Fix" and similar
-   * extensions. Works on Firefox Android (Fenix) and Firefox Desktop.
+   * This mirrors the technique used by Mozilla's "Video Background Play Fix"
+   * extension. Works on Firefox Android (Fenix) and Firefox Desktop.
    */
   let bgPlaybackInstalled = false;
-  const originalAddEventListener = EventTarget.prototype.addEventListener;
+  let bgKeepaliveInterval = null;
+  let bgAudioCtx = null;
 
   function updateBackgroundPlayback() {
     if (bgPlaybackActive && !bgPlaybackInstalled) {
@@ -196,42 +206,150 @@
     if (bgPlaybackInstalled) return;
     bgPlaybackInstalled = true;
 
-    // Override document.hidden to always return false
-    Object.defineProperty(document, 'hidden', {
+    // ── Inject overrides into the PAGE world ──
+    // We use Firefox's privileged wrappedJSObject API to directly access and
+    // modify page-world objects. This bypasses YouTube's Content Security
+    // Policy (CSP) which would silently block inline <script> tag injection.
+    const pageWindow = window.wrappedJSObject;
+
+    // ── Override Page Visibility API in the page world ──
+    exportFunction(() => false, pageWindow.document, { defineAs: '__bgPlayHiddenGetter' });
+    pageWindow.Object.defineProperty(pageWindow.document, 'hidden', {
       configurable: true,
-      get: function() { return false; }
+      get: pageWindow.document.__bgPlayHiddenGetter
     });
 
-    // Override document.visibilityState to always return "visible"
-    Object.defineProperty(document, 'visibilityState', {
+    exportFunction(() => 'visible', pageWindow.document, { defineAs: '__bgPlayVisStateGetter' });
+    pageWindow.Object.defineProperty(pageWindow.document, 'visibilityState', {
       configurable: true,
-      get: function() { return 'visible'; }
+      get: pageWindow.document.__bgPlayVisStateGetter
     });
 
-    // Intercept addEventListener to block visibilitychange listeners
-    // from being registered by YouTube's code
-    EventTarget.prototype.addEventListener = function(type, listener, options) {
-      if (type === 'visibilitychange') {
-        // Silently drop visibilitychange listeners — YouTube will never
-        // know the page lost visibility
+    // ── Block visibilitychange/pagehide events at capture phase ──
+    // Must be registered BEFORE YouTube's code loads (called at document_start)
+    const blockEvent = exportFunction(function(e) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }, pageWindow);
+
+    pageWindow.document.addEventListener('visibilitychange', blockEvent, true);
+    pageWindow.document.addEventListener('pagehide', blockEvent, true);
+    pageWindow.document.addEventListener('freeze', blockEvent, true);
+    pageWindow.addEventListener('blur', blockEvent, true);
+
+    // ── Intercept future addEventListener calls for visibility events ──
+    const origAdd = pageWindow.EventTarget.prototype.addEventListener;
+    pageWindow.EventTarget.prototype.addEventListener = exportFunction(function(type, listener, opts) {
+      if (type === 'visibilitychange' || type === 'pagehide' || type === 'freeze') {
+        return; // silently discard
+      }
+      return origAdd.call(this, type, listener, opts);
+    }, pageWindow);
+
+    // ── Intercept video.pause() — critical for Android ──
+    // On Android, the browser engine itself calls video.pause() when the
+    // app is backgrounded or the screen is locked. YouTube's mobile player
+    // also calls pause() on visibility change. We intercept pause() and
+    // only allow it when the user explicitly pauses (i.e. page is "visible"
+    // per the real browser state, meaning user is actively looking at it).
+    const origPause = pageWindow.HTMLMediaElement.prototype.pause;
+    pageWindow.HTMLMediaElement.prototype.pause = exportFunction(function() {
+      // Allow pause only if the page is truly visible (user-initiated).
+      // We check the REAL hidden state by reading from the prototype
+      // (our override is on the document instance, not the prototype).
+      const reallyHidden = Object.getOwnPropertyDescriptor(
+        pageWindow.Document.prototype, 'hidden'
+      );
+      const isReallyHidden = reallyHidden ? reallyHidden.get.call(pageWindow.document) : false;
+
+      if (isReallyHidden) {
+        // Page is actually hidden (minimized/screen locked) — block the pause
         return;
       }
-      return originalAddEventListener.call(this, type, listener, options);
-    };
+      // Page is visible — user clicked pause, allow it
+      return origPause.call(this);
+    }, pageWindow);
+
+    // ── Audio context keepalive (Android) ──
+    // On Android, setInterval is heavily throttled when backgrounded.
+    // A silent AudioContext oscillator keeps the audio pipeline active,
+    // preventing Android from suspending the tab's audio processing.
+    try {
+      bgAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = bgAudioCtx.createOscillator();
+      const gain = bgAudioCtx.createGain();
+      gain.gain.value = 0; // completely silent
+      oscillator.connect(gain);
+      gain.connect(bgAudioCtx.destination);
+      oscillator.start();
+    } catch (e) { /* AudioContext not available — fall back to interval */ }
+
+    // ── Keepalive: resume paused videos (secondary safety net) ──
+    bgKeepaliveInterval = setInterval(() => {
+      const videos = document.querySelectorAll('video');
+      videos.forEach((video) => {
+        if (video.paused && !video.ended && video.readyState >= 2 && video.currentTime > 0) {
+          video.play().catch(() => { /* ignore autoplay policy errors */ });
+        }
+      });
+    }, 500);
+
+    // Store references for cleanup
+    pageWindow.__ytBgPlayCleanup = exportFunction(function() {
+      pageWindow.document.removeEventListener('visibilitychange', blockEvent, true);
+      pageWindow.document.removeEventListener('pagehide', blockEvent, true);
+      pageWindow.document.removeEventListener('freeze', blockEvent, true);
+      pageWindow.removeEventListener('blur', blockEvent, true);
+      pageWindow.EventTarget.prototype.addEventListener = origAdd;
+      pageWindow.HTMLMediaElement.prototype.pause = origPause;
+      delete pageWindow.document.hidden;
+      delete pageWindow.document.visibilityState;
+      delete pageWindow.document.__bgPlayHiddenGetter;
+      delete pageWindow.document.__bgPlayVisStateGetter;
+      delete pageWindow.__ytBgPlayCleanup;
+    }, pageWindow);
   }
 
   function disableBackgroundPlayback() {
     if (!bgPlaybackInstalled) return;
     bgPlaybackInstalled = false;
 
-    // Restore original addEventListener
-    EventTarget.prototype.addEventListener = originalAddEventListener;
+    // Run the cleanup function we exported into the page world
+    try {
+      const pageWindow = window.wrappedJSObject;
+      if (pageWindow.__ytBgPlayCleanup) {
+        pageWindow.__ytBgPlayCleanup();
+      }
+    } catch (e) { /* ignore */ }
 
-    // Restore document.hidden and visibilityState to their native behavior
-    // by deleting our overrides (the native getters on the prototype will
-    // take over again)
-    delete document.hidden;
-    delete document.visibilityState;
+    // Stop the audio context keepalive
+    if (bgAudioCtx) {
+      bgAudioCtx.close().catch(() => {});
+      bgAudioCtx = null;
+    }
+
+    // Stop the keepalive interval
+    if (bgKeepaliveInterval) {
+      clearInterval(bgKeepaliveInterval);
+      bgKeepaliveInterval = null;
+    }
+  }
+
+  // ── CRITICAL: Apply background playback overrides IMMEDIATELY ──
+  // Since bgPlaybackActive defaults to true and this script runs at
+  // document_start, we must install the overrides NOW — before YouTube's
+  // code loads and registers its own visibilitychange listeners.
+  // If the async storage read later reveals the user disabled it,
+  // disableBackgroundPlayback() will cleanly remove everything.
+  // Wrapped in try-catch so a failure here does NOT crash the entire
+  // extension (ad blocker, shorts blocker, etc. are defined after this).
+  try {
+    enableBackgroundPlayback();
+  } catch (e) {
+    // wrappedJSObject or exportFunction may not be available yet at
+    // document_start. The fallback is initializeSettings() which will
+    // call updateBackgroundPlayback() after the async storage read.
+    bgPlaybackInstalled = false;
   }
 
 

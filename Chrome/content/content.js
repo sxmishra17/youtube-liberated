@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * YouTube Liberated — Content Script Logic (Chrome MV3)
+ * Youtube Smooth — Content Script Logic (Chrome MV3)
  * Copyright (c) 2026 Yuvatech Solutions USA LLC & Satish Mishra. All rights reserved.
  * ============================================================================
  *

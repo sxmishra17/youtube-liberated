@@ -1,4 +1,4 @@
-# YouTube Liberated (Chrome Extension)
+# Youtube Smooth (Chrome Extension)
 
 A lightweight, single-purpose Chrome extension built on **Manifest V3** to declutter the YouTube viewing interface and provide a clean, distraction-free environment. 
 
@@ -51,7 +51,7 @@ The Chrome extension uses the following architecture:
 3.  In the top-right corner, toggle the **Developer mode** switch to **ON**.
 4.  Click the **Load unpacked** button in the top-left corner.
 5.  Select the **`Chrome/`** folder containing the `manifest.json` file.
-6.  The **YouTube Liberated** icon will appear in your extensions list. Pin it to your toolbar for easy access.
+6.  The **Youtube Smooth** icon will appear in your extensions list. Pin it to your toolbar for easy access.
 
 ---
 

@@ -1,11 +1,11 @@
-# Privacy Policy for YouTube Liberated
+# Privacy Policy for Youtube Smooth
 
 **Last Updated:** July 4, 2026
 
-Yuvatech Solutions USA LLC ("we", "us", or "our") operates the **YouTube Liberated** browser extension. We respect your privacy and are committed to protecting it. This Privacy Policy explains our data collection and handling practices.
+Yuvatech Solutions USA LLC ("we", "us", or "our") operates the **Youtube Smooth** browser extension. We respect your privacy and are committed to protecting it. This Privacy Policy explains our data collection and handling practices.
 
 ## 1. No Collection of Personal Information
-The **YouTube Liberated** extension operates entirely client-side. 
+The **Youtube Smooth** extension operates entirely client-side. 
 - We do **not** collect, store, process, or transmit any personally identifiable information (PII).
 - We do **not** collect, track, or record your browsing history, IP address, device information, search queries, or video viewing behavior.
 - There are no telemetry systems, analytics trackers, or remote logging services bundled inside the extension.
@@ -23,5 +23,5 @@ This policy and the extension comply with the Chrome Web Store Developer Agreeme
 
 ## 5. Contact Information
 If you have any questions or feedback regarding this Privacy Policy, please contact us at:
-- **Email**: youtube-liberated@satishmishra.dev
+- **Email**: youtube-smooth@satishmishra.dev
 - **Developer**: Yuvatech Solutions USA LLC

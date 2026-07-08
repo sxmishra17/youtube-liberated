@@ -1,6 +1,6 @@
 /*
 ============================================================================
-YouTube Liberated — Content Scripts Stylesheet
+Youtube Smooth — Content Scripts Stylesheet
 ============================================================================
 
 This stylesheet defines CSS rules to hide ad components, Shorts sections,
@@ -74,13 +74,31 @@ html.yt-block-ads ytd-companion-slot-renderer {
 
 /* ── 2. SHORTS BLOCKING RULES ───────────────────────────────────────────── */
 /* Scoped to html.yt-block-shorts. Hides navigation items & content shelves. */
+/* NOTE: Rules are split into small groups so one invalid selector can never */
+/* silently invalidate an entire block.                                       */
 
-/* Homepage Shorts Grid/Shelf */
+/* Homepage Shorts Grid/Shelf (Desktop) */
 html.yt-block-shorts ytd-rich-shelf-renderer[is-shorts],
-html.yt-block-shorts ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.yt-block-shorts ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]) {
+  display: none !important;
+}
+
+/* Homepage Shorts Grid/Shelf (Mobile) */
 html.yt-block-shorts ytm-reel-shelf-renderer,
-html.yt-block-shorts ytm-rich-section-renderer:has(ytm-reel-shelf-renderer),
-html.yt-block-shorts ytm-rich-section-renderer:has-text("Shorts") {
+html.yt-block-shorts ytm-rich-section-renderer:has(ytm-reel-shelf-renderer) {
+  display: none !important;
+}
+
+/* Newer YouTube Shorts view-model renderers (2024+ layouts) */
+html.yt-block-shorts ytd-shorts-lockup-view-model-renderer,
+html.yt-block-shorts ytd-rich-shelf-renderer:has(ytd-shorts-lockup-view-model-renderer),
+html.yt-block-shorts ytd-rich-section-renderer:has(ytd-shorts-lockup-view-model-renderer) {
+  display: none !important;
+}
+
+/* Individual Shorts items that appear in the feed grid */
+html.yt-block-shorts ytd-rich-item-renderer:has([is-shorts]),
+html.yt-block-shorts ytd-rich-item-renderer:has(ytd-shorts-lockup-view-model-renderer) {
   display: none !important;
 }
 
@@ -91,10 +109,20 @@ html.yt-block-shorts .reel-shelf-items {
   display: none !important;
 }
 
+/* Shorts video renderers in search results */
+html.yt-block-shorts ytd-video-renderer:has(a[href*="/shorts/"]),
+html.yt-block-shorts ytd-video-renderer[is-shorts] {
+  display: none !important;
+}
+
 /* Full sidebar Navigation link ("Shorts") */
 html.yt-block-shorts ytd-guide-entry-renderer:has(a[href^="/shorts"]),
 html.yt-block-shorts ytd-guide-entry-renderer[entry-id="FEshorts"],
-html.yt-block-shorts a[path="shorts"],
+html.yt-block-shorts a[path="shorts"] {
+  display: none !important;
+}
+
+/* Mobile sidebar/bottom nav ("Shorts") */
 html.yt-block-shorts ytm-pivot-bar-item-renderer[aria-label="Shorts"],
 html.yt-block-shorts ytm-pivot-bar-item-renderer[entry-id="FEshorts"],
 html.yt-block-shorts ytm-pivot-bar-item-renderer:has(a[href^="/shorts"]) {
@@ -109,9 +137,18 @@ html.yt-block-shorts ytd-mini-guide-entry-renderer[entry-id="FEshorts"] {
 
 /* Hide Shorts tab on channel pages */
 html.yt-block-shorts yt-tab-descriptor-wrapper[key="SHORTS"],
-html.yt-block-shorts tp-yt-paper-tab:has(div[title="Shorts"]),
+html.yt-block-shorts tp-yt-paper-tab:has(div[title="Shorts"]) {
+  display: none !important;
+}
+
+/* Hide Shorts tab on channel pages (Mobile) */
 html.yt-block-shorts ytm-tab-descriptor-wrapper[key="SHORTS"],
 html.yt-block-shorts ytm-tab-renderer[tab-id="SHORTS"] {
+  display: none !important;
+}
+
+/* Shorts grid on channel pages */
+html.yt-block-shorts ytd-rich-grid-renderer[is-shorts-grid] {
   display: none !important;
 }
 
