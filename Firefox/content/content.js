@@ -10,7 +10,7 @@
  * 1. Read toggle states from browser storage (ads and shorts toggles).
  * 2. Toggle helper classes on the root <html> element to apply CSS hiding rules.
  * 3. Use storage change listeners to update settings dynamically without reloading.
- * 4. Run a MutationObserver to auto-skip video ads (pre-roll, mid-roll).
+ * 4. Strip ad data from YouTube's player configuration before the player loads.
  * 5. Handle Shorts URLs redirection, sending visitors from /shorts/ to the watch page.
  *
  * ── HOW TO USE THIS EXTENSION ───────────────────────────────────────────────
@@ -99,6 +99,7 @@
       updateHtmlClasses();
       handleShortsRedirect();
       updateBackgroundPlayback();
+      updateAdStripping();
     });
   }
 
@@ -128,6 +129,7 @@
 
     updateHtmlClasses();
     handleShortsRedirect();
+    updateAdStripping();
   }
 
   /**
@@ -354,213 +356,209 @@
 
 
   /**
-   * ── 3. AGGRESSIVE AD SKIPPER & FAST-FORWARDER ──────────────────────────────
-   * Handles interactive/video ads that CSS alone cannot completely stop.
-   * Uses multiple detection layers to skip ads as close to instantly as possible:
-   *   Layer 1: CSS injection to visually hide the player during ads (zero flash)
-   *   Layer 2: MutationObserver (synchronous, no debounce) on class changes
-   *   Layer 3: Fast polling interval (every 50ms) as a safety net
-   *   Layer 4: Video element event interception (playing/timeupdate)
+   * ── 3. PRE-LOAD AD DATA STRIPPING ──────────────────────────────────────────
+   * Instead of letting ads load and then skipping them (which YouTube detects
+   * and triggers the "video player will be blocked" warning), this intercepts
+   * YouTube's player configuration data and strips ad-related fields BEFORE
+   * the player processes them.
+   *
+   * Because the player never enters an ad state, there's nothing anomalous
+   * for YouTube's anti-adblock telemetry to detect — no skipped timelines,
+   * no clicked skip buttons, no ad-showing class toggled.
+   *
+   * Uses Firefox's wrappedJSObject / exportFunction APIs to inject
+   * interception code into the page world (same technique as background
+   * playback in Section 2b).
+   *
+   * Interception layers:
+   *   Layer 1: Trap ytInitialPlayerResponse global variable (inline config)
+   *   Layer 2: Override Response.prototype.json (SPA navigation fetches)
+   *   Layer 3: Anti-adblock popup dismissal (safety net)
    */
 
-  // ── Layer 1: Inject CSS to visually hide the player while an ad is active ──
-  // This prevents the user from ever seeing ad frames, even if JS takes a tick
-  // to seek/skip. The player is revealed again once the ad state is removed.
-  const adHideStyle = document.createElement('style');
-  adHideStyle.id = 'yt-ext-ad-hide';
-  adHideStyle.textContent = `
-    html.yt-block-ads .html5-video-player.ad-showing video,
-    html.yt-block-ads .html5-video-player.ad-interrupting video {
-      opacity: 0 !important;
+  let adStripInstalled = false;
+
+  function updateAdStripping() {
+    if (blockAdsActive && !adStripInstalled) {
+      installAdDataStripping();
+    } else if (!blockAdsActive && adStripInstalled) {
+      uninstallAdDataStripping();
     }
-    html.yt-block-ads .html5-video-player.ad-showing .ytp-ad-player-overlay-layout,
-    html.yt-block-ads .html5-video-player.ad-interrupting .ytp-ad-player-overlay-layout {
-      display: none !important;
-    }
-  `;
-  (document.head || document.documentElement).appendChild(adHideStyle);
+  }
 
-  // ── Core skip logic ────────────────────────────────────────────────────────
-  function skipVideoAds() {
-    if (!blockAdsActive) return;
+  function installAdDataStripping() {
+    if (adStripInstalled) return;
+    adStripInstalled = true;
 
-    // Check if the player is currently in an ad state
-    const playerContainer = document.querySelector('.html5-video-player');
-    const isAdShowing = playerContainer && (
-      playerContainer.classList.contains('ad-showing') ||
-      playerContainer.classList.contains('ad-interrupting')
-    );
+    const pageWindow = window.wrappedJSObject;
 
-    if (isAdShowing) {
-      // Mute, fast-forward, and seek to end of every ad video element
-      const videos = document.querySelectorAll('video');
-      videos.forEach((video) => {
-        // Mute immediately — even before duration is known
-        video.muted = true;
-        video.volume = 0;
-
-        if (!isNaN(video.duration) && video.duration > 0) {
-          // Set speed to maximum and seek to the end
-          video.playbackRate = 16;
-          video.currentTime = video.duration;
-        }
-      });
-    }
-
-    // Auto-click all known skip button selectors
-    const skipSelectors = [
-      '.ytp-skip-ad-button',
-      '.ytp-ad-skip-button',
-      '.ytp-ad-skip-button-modern',
-      '.ytp-ad-skip-button-text',
-      '.ytp-ad-skip-button-hover',
-      // "Skip Ads" overlay text button used in newer YouTube layouts
-      'button.ytp-ad-skip-button-modern',
-      '.ytp-ad-skip-button-slot',
-      // "Visit advertiser" close/dismiss buttons
-      '.ytp-ad-overlay-close-button'
-    ];
-
-    for (const selector of skipSelectors) {
-      const btn = document.querySelector(selector);
-      if (btn) {
-        btn.click();
+    // ── Export the ad-field cleaner into the page world ──
+    // Strips ad-related properties from YouTube's player configuration objects.
+    // Field names are defined inline (inside the exported function) so the
+    // array lives in the page world — avoiding Xray wrapper issues.
+    const cleanAds = exportFunction(function(obj) {
+      if (!obj || typeof obj !== 'object') return obj;
+      var fields = [
+        'adPlacements', 'playerAds', 'adSlots',
+        'adBreakParams', 'adBreakHeartbeatParams',
+        'adSignalsInfo', 'attestation',
+        'playerAdsConfig', 'enforcementData'
+      ];
+      for (var i = 0; i < fields.length; i++) {
+        try { delete obj[fields[i]]; } catch(e) {}
       }
-    }
-  }
+      // Some API responses nest the player data one level deeper
+      if (obj.playerResponse) {
+        for (var j = 0; j < fields.length; j++) {
+          try { delete obj.playerResponse[fields[j]]; } catch(e) {}
+        }
+      }
+      // Strip enforcement messages from page-level data
+      if (obj.overlay && obj.overlay.reelPlayerOverlayRenderer) {
+        try { delete obj.overlay.reelPlayerOverlayRenderer.adPlacements; } catch(e) {}
+      }
+      return obj;
+    }, pageWindow);
 
-  // ── Layer 2: MutationObserver — synchronous, no debounce ───────────────────
-  // Fires skipVideoAds() on every DOM mutation with zero delay.
-  // We use a targeted observer on the player container when available,
-  // and a broader document observer as fallback.
-  let playerObserver = null;
+    pageWindow.__ytCleanAds = cleanAds;
 
-  function observePlayerContainer() {
-    const player = document.querySelector('.html5-video-player');
-    if (!player || player.__ytExtObserved) return;
+    // ── Layer 1: Trap ytInitialPlayerResponse ──────────────────────────────
+    // YouTube sets this global variable with inline player config embedded
+    // in the page HTML. We intercept the setter and strip ad data before
+    // the player reads it.
+    var _storedResponse = pageWindow.ytInitialPlayerResponse || null;
+    if (_storedResponse) cleanAds(_storedResponse);
 
-    player.__ytExtObserved = true;
-
-    // Watch specifically for class attribute changes on the player (ad-showing toggled)
-    playerObserver = new MutationObserver(() => {
-      skipVideoAds();
+    pageWindow.Object.defineProperty(pageWindow, 'ytInitialPlayerResponse', {
+      configurable: true,
+      enumerable: true,
+      get: exportFunction(function() { return _storedResponse; }, pageWindow),
+      set: exportFunction(function(val) {
+        if (val && typeof val === 'object') {
+          pageWindow.__ytCleanAds(val);
+        }
+        _storedResponse = val;
+      }, pageWindow)
     });
-    playerObserver.observe(player, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
+
+    // ── Layer 2a: Override JSON.parse ──────────────────────────────────────
+    // YouTube often reads fetch responses as text and then calls JSON.parse
+    // manually, bypassing Response.prototype.json entirely. This catches
+    // ALL JSON parsing on the page. We only clean objects that look like
+    // YouTube player responses (have ad-related fields) to avoid performance
+    // overhead on unrelated parsing.
+    var origJsonParse = pageWindow.JSON.parse;
+    pageWindow.JSON.parse = exportFunction(function() {
+      var result = origJsonParse.apply(this, arguments);
+      if (result && typeof result === 'object') {
+        if (result.adPlacements || result.playerAds || result.adSlots ||
+            result.playerResponse || result.enforcementData) {
+          pageWindow.__ytCleanAds(result);
+        }
+      }
+      return result;
+    }, pageWindow);
+
+    // ── Layer 2b: Override Response.prototype.json ─────────────────────────
+    // Additional catch for fetch responses parsed via .json() method.
+    var origRespJson = pageWindow.Response.prototype.json;
+    pageWindow.Response.prototype.json = exportFunction(function() {
+      var resp = this;
+      var url = resp.url || '';
+      return origRespJson.call(resp).then(exportFunction(function(data) {
+        if (url.indexOf('/youtubei/v1/player') !== -1 ||
+            url.indexOf('/youtubei/v1/next') !== -1) {
+          if (pageWindow.__ytCleanAds) pageWindow.__ytCleanAds(data);
+        }
+        return data;
+      }, pageWindow));
+    }, pageWindow);
+
+    // Store references for cleanup if the user toggles ad blocking off
+    pageWindow.__ytAdStripCleanup = exportFunction(function() {
+      pageWindow.JSON.parse = origJsonParse;
+      pageWindow.Response.prototype.json = origRespJson;
+      try {
+        delete pageWindow.ytInitialPlayerResponse;
+        if (_storedResponse) {
+          pageWindow.ytInitialPlayerResponse = _storedResponse;
+        }
+      } catch(e) {}
+      delete pageWindow.__ytCleanAds;
+      delete pageWindow.__ytAdStripCleanup;
+    }, pageWindow);
   }
 
-  // Broad observer: watches for new child nodes (catches the player appearing)
-  const broadObserver = new MutationObserver(() => {
-    skipVideoAds();
-    // Try to attach the targeted player observer if not yet attached
-    observePlayerContainer();
-  });
-
-  // ── Layer 3: Fast polling interval ─────────────────────────────────────────
-  // Runs every 50ms as a safety net to catch anything the observers miss.
-  let adPollInterval = null;
-
-  function startAdPolling() {
-    if (adPollInterval) return;
-    adPollInterval = setInterval(skipVideoAds, 50);
+  function uninstallAdDataStripping() {
+    if (!adStripInstalled) return;
+    adStripInstalled = false;
+    try {
+      var pageWindow = window.wrappedJSObject;
+      if (pageWindow.__ytAdStripCleanup) {
+        pageWindow.__ytAdStripCleanup();
+      }
+    } catch(e) {}
   }
 
-  function stopAdPolling() {
-    if (adPollInterval) {
-      clearInterval(adPollInterval);
-      adPollInterval = null;
-    }
-  }
+  // ── Layer 3: Anti-adblock popup dismissal (safety net) ──────────────────
+  // Periodically checks for YouTube's enforcement popups and dismisses them.
+  // Uses a lightweight setInterval (every 3s) instead of a MutationObserver
+  // to avoid performance overhead — YouTube's DOM is extremely active, and
+  // enforcement popups are rare events that don't need instant detection.
+  let dismissalInterval = null;
 
-  // ── Layer 4: Video element event interception ──────────────────────────────
-  // Hooks into video elements to catch the exact moment an ad starts playing.
-  const hookedVideos = new WeakSet();
+  function setupAntiAdblockDismissal() {
+    if (dismissalInterval) return;
 
-  function hookVideoElements() {
-    if (!blockAdsActive) return;
+    dismissalInterval = setInterval(() => {
+      if (!blockAdsActive) return;
 
-    document.querySelectorAll('video').forEach((video) => {
-      if (hookedVideos.has(video)) return;
-      hookedVideos.add(video);
+      // Known enforcement popup selectors (YouTube updates these periodically)
+      var selectors = [
+        'ytd-enforcement-message-view-model',
+        '#enforcement-message',
+        'ytd-popup-container yt-playability-error-supported-renderers',
+      ];
 
-      // 'playing' fires the instant the video starts rendering frames
-      video.addEventListener('playing', () => {
-        const player = video.closest('.html5-video-player');
-        if (player && (
-          player.classList.contains('ad-showing') ||
-          player.classList.contains('ad-interrupting')
-        )) {
-          video.muted = true;
-          video.volume = 0;
-          if (!isNaN(video.duration) && video.duration > 0) {
-            video.playbackRate = 16;
-            video.currentTime = video.duration;
+      for (var i = 0; i < selectors.length; i++) {
+        try {
+          var el = document.querySelector(selectors[i]);
+          if (el) {
+            // Try to close/dismiss it via known buttons
+            var dismissBtn = el.querySelector(
+              'button, [aria-label="Close"], .dismiss-button, #dismiss-button'
+            );
+            if (dismissBtn) {
+              dismissBtn.click();
+            } else {
+              // No dismiss button found — hide the element
+              el.style.display = 'none';
+            }
           }
-        }
-      });
-
-      // 'timeupdate' fires as the ad progresses — secondary catch
-      video.addEventListener('timeupdate', () => {
-        const player = video.closest('.html5-video-player');
-        if (player && (
-          player.classList.contains('ad-showing') ||
-          player.classList.contains('ad-interrupting')
-        )) {
-          video.muted = true;
-          video.volume = 0;
-          if (!isNaN(video.duration) && video.duration > 0) {
-            video.playbackRate = 16;
-            video.currentTime = video.duration;
-          }
-        }
-      });
-
-      // 'loadedmetadata' fires when duration becomes known — earliest skip opportunity
-      video.addEventListener('loadedmetadata', () => {
-        const player = video.closest('.html5-video-player');
-        if (player && (
-          player.classList.contains('ad-showing') ||
-          player.classList.contains('ad-interrupting')
-        )) {
-          video.muted = true;
-          video.volume = 0;
-          video.playbackRate = 16;
-          video.currentTime = video.duration;
-        }
-      });
-    });
+        } catch(e) {}
+      }
+    }, 3000);
   }
 
-  // ── Start all detection layers ─────────────────────────────────────────────
-  function startAdBlocker() {
-    // Layer 2: Broad DOM observer
-    broadObserver.observe(document.body || document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-
-    // Try to attach the targeted player observer immediately
-    observePlayerContainer();
-
-    // Layer 3: Fast polling
-    startAdPolling();
-
-    // Layer 4: Hook existing video elements
-    hookVideoElements();
-
-    // Re-hook video elements periodically (new ones may be created by YouTube SPA)
-    setInterval(hookVideoElements, 500);
-
-    // Initial sweep
-    skipVideoAds();
+  // ── CRITICAL: Install ad data stripping IMMEDIATELY ──
+  // Since blockAdsActive defaults to true and this script runs at
+  // document_start, we must install the interceptions NOW — before YouTube's
+  // code loads and sets ytInitialPlayerResponse.
+  // If the async storage read later reveals the user disabled ad blocking,
+  // uninstallAdDataStripping() will cleanly remove everything.
+  // Wrapped in try-catch so a failure here does NOT crash the entire
+  // extension (shorts blocker, posts blocker, etc. are defined in CSS).
+  try {
+    installAdDataStripping();
+  } catch (e) {
+    adStripInstalled = false;
   }
 
+  // Anti-adblock popup dismissal needs a DOM target
   if (document.body) {
-    startAdBlocker();
+    setupAntiAdblockDismissal();
   } else {
-    document.addEventListener('DOMContentLoaded', startAdBlocker);
+    document.addEventListener('DOMContentLoaded', setupAntiAdblockDismissal);
   }
 
   // Run initialization

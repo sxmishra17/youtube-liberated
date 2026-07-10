@@ -17,16 +17,16 @@ blocking without layout flicker or performance cost.
 */
 
 /* ── 1. ADS BLOCKING RULES ──────────────────────────────────────────────── */
-/* Scoped to html.yt-block-ads. Any matching elements will be hidden.     */
+/* Scoped to html.yt-block-ads. Uses a stealthy collapse technique instead */
+/* of display:none — YouTube actively detects display:none on ad elements  */
+/* and triggers anti-adblock enforcement. This method hides elements while */
+/* keeping them technically "rendered" in the DOM.                         */
 
 /* Homepage Masthead Ad */
 html.yt-block-ads #masthead-ad,
 html.yt-block-ads ytd-banner-promo-renderer,
 html.yt-block-ads ytm-ad-slot,
-html.yt-block-ads ad-slot-renderer {
-  display: none !important;
-}
-
+html.yt-block-ads ad-slot-renderer,
 /* Feed & General Ads Slots */
 html.yt-block-ads ytd-ad-slot-renderer,
 html.yt-block-ads ytd-in-feed-ad-layout-renderer,
@@ -35,40 +35,32 @@ html.yt-block-ads ytd-statement-banner-renderer,
 html.yt-block-ads ytd-brand-video-singleton-renderer,
 html.yt-block-ads ytm-promoted-sparkles-web-renderer,
 html.yt-block-ads ytm-display-ad-renderer,
-html.yt-block-ads ytm-inline-ad-renderer {
-  display: none !important;
-}
-
+html.yt-block-ads ytm-inline-ad-renderer,
 /* Sidebar Display Ads */
 html.yt-block-ads ytd-display-ad-renderer,
 html.yt-block-ads ytd-compact-promoted-item-renderer,
 html.yt-block-ads #player-ads,
-html.yt-block-ads ytm-companion-ad-renderer {
-  display: none !important;
-}
-
+html.yt-block-ads ytm-companion-ad-renderer,
 /* Video Player Ad Overlays (Banners during video playback) */
 html.yt-block-ads .ytp-ad-overlay-container,
 html.yt-block-ads .ytp-ad-text-overlay,
-html.yt-block-ads .ytp-ad-message-container {
-  display: none !important;
-}
-
+html.yt-block-ads .ytp-ad-message-container,
 /* Search Promoted Ads */
-html.yt-block-ads ytd-promoted-video-renderer {
-  display: none !important;
-}
-
+html.yt-block-ads ytd-promoted-video-renderer,
 /* YouTube Premium Promos (Mealbars/Popups) */
 html.yt-block-ads ytd-mealbar-promo-renderer,
-html.yt-block-ads yt-mealbar-promo-renderer {
-  display: none !important;
-}
-
+html.yt-block-ads yt-mealbar-promo-renderer,
 /* Merch Shelves & Sponsored Banners */
 html.yt-block-ads ytd-merch-shelf-renderer,
 html.yt-block-ads ytd-companion-slot-renderer {
-  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  pointer-events: none !important;
 }
 
 
